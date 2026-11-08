@@ -4,17 +4,15 @@ const { google } = require('googleapis');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Configurazione OAuth2 con le variabili salvate su Render
 const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
   'https://mio-backend-calendar.onrender.com/api/auth/google/callback'
 );
 
-// Variabile temporanea per memorizzare i token dopo il login
 let userTokens = null;
 
-// Rotta iniziale per avviare il login
+// Rotta di autenticazione Google
 app.get('/auth/google', (req, res) => {
   const scopes = ['https://www.googleapis.com/auth/calendar.readonly'];
   const url = oauth2Client.generateAuthUrl({
@@ -25,22 +23,20 @@ app.get('/auth/google', (req, res) => {
   res.redirect(url);
 });
 
-// Rotta di Callback chiamata da Google dopo il login
+// Callback di Google
 app.get('/api/auth/google/callback', async (req, res) => {
   const code = req.query.code;
   try {
     const { tokens } = await oauth2Client.getToken(code);
-    userTokens = tokens; // Salviamo i token in memoria
+    userTokens = tokens;
     oauth2Client.setCredentials(tokens);
-    
-    res.send('Autenticazione con Google Calendar riuscita con successo! Ora puoi aprire la pagina degli eventi o collegarla alla tua app.');
+    res.send('Autenticazione riuscita con successo! Puoi chiudere questa pagina.');
   } catch (error) {
-    console.error('Errore durante l\'autenticazione:', error);
     res.status(500).send('Autenticazione fallita.');
   }
 });
 
-// Rotta per recuperare gli eventi del calendario
+// Endpoint JSON richiesto da Canva AI per leggere gli eventi
 app.get('/api/events', async (req, res) => {
   try {
     if (!userTokens) {
@@ -58,10 +54,9 @@ app.get('/api/events', async (req, res) => {
       orderBy: 'startTime',
     });
 
-    const events = response.data.items;
-    res.json(events); // Restituisce gli eventi in formato JSON
+    res.json(response.data.items);
   } catch (error) {
-    console.error('Errore nel recupero degli eventi:', error);
+    console.error('Errore nel recupero eventi:', error);
     res.status(500).json({ error: 'Impossibile recuperare gli eventi' });
   }
 });
