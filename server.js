@@ -8,7 +8,7 @@ const port = process.env.PORT || 3000;
 const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
-  'https://mio-backend-calendar.onrender.com/api/auth/google/callback' // Sostituisci con il tuo URL esatto se cambia
+  'https://mio-backend-calendar.onrender.com/api/auth/google/callback'
 );
 
 // Rotta iniziale per avviare il login
@@ -28,11 +28,11 @@ app.get('/api/auth/google/callback', async (req, res) => {
     const { tokens } = await oauth2Client.getToken(code);
     oauth2Client.setCredentials(tokens);
     
-    // Qui potrai reindirizzare l'utente o mostrare i dati a Canva
+    // Autenticazione riuscita
     res.send('Autenticazione con Google Calendar riuscita con successo! Puoi chiudere questa pagina.');
   } catch (error) {
     console.error('Errore durante l\'autenticazione:', error);
-    res.status(500.send('Autenticazione fallita.'));
+    res.status(500).send('Autenticazione fallita.');
   }
 });
 
