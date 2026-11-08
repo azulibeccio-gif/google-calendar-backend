@@ -1,12 +1,12 @@
 {
   "name": "google-calendar-backend",
   "version": "1.0.0",
-  "description": "Backend OAuth per Google Calendar",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.19.2",
     "googleapis": "^134.0.0"
   }
