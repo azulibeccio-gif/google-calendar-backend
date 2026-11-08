@@ -1,8 +1,13 @@
 const express = require('express');
 const { google } = require('googleapis');
+const cors = require('cors');
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+// Abilita le richieste esterne da Canva/browser
+app.use(cors());
+app.use(express.json());
 
 const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
@@ -12,7 +17,6 @@ const oauth2Client = new google.auth.OAuth2(
 
 let userTokens = null;
 
-// Rotta di autenticazione Google
 app.get('/auth/google', (req, res) => {
   const scopes = ['https://www.googleapis.com/auth/calendar.readonly'];
   const url = oauth2Client.generateAuthUrl({
@@ -23,7 +27,6 @@ app.get('/auth/google', (req, res) => {
   res.redirect(url);
 });
 
-// Callback di Google
 app.get('/api/auth/google/callback', async (req, res) => {
   const code = req.query.code;
   try {
@@ -36,7 +39,6 @@ app.get('/api/auth/google/callback', async (req, res) => {
   }
 });
 
-// Endpoint JSON richiesto da Canva AI per leggere gli eventi
 app.get('/api/events', async (req, res) => {
   try {
     if (!userTokens) {
@@ -45,7 +47,7 @@ app.get('/api/events', async (req, res) => {
 
     oauth2Client.setCredentials(userTokens);
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
-    
+
     const response = await calendar.events.list({
       calendarId: 'primary',
       timeMin: (new Date()).toISOString(),
